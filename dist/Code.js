@@ -153,7 +153,7 @@ function getOrCreateFolder(folderName, parentFolderId) {
 }
 
 /**
- * Gets the message date of the original mail from a forwarded thread.
+ * Gets the message date of the original mail from a potentially forwarded thread.
  */
 function getForwardedMessageDate(message) {
     var subjectLine = message.getSubject();
