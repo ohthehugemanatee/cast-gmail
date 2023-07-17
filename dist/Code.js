@@ -159,22 +159,34 @@ function getForwardedMessageDate(message) {
     var subjectLine = message.getSubject();
     // Special handling if it looks like a forwarded message.
     if (message.getSubject().includes("Fwd:") || message.getSubject().includes("WG:")) {
-      console.log(message.getPlainBody());
-      // Split message body by instances of the Date header text with optional whitespace in front
-      var splitBody = message.getPlainBody().split(/>*\s*\*?(?:Datum:\*?\ )|(?:Date\*?: )/);
+      // Language var to hold which language is detected in the last message.
+      var lang = '';
+      // Split message body by instances of the German Date header text with optional whitespace in front
+      var splitBody = message.getPlainBody().split(/[>\s\*]*Datum:\*?\ /);
+      if (splitBody.length > 1) {
+        lang = "de";
+      }
+      // Process only the last message.
+      var lastMessage = splitBody[splitBody.length - 1 ];
 
+      // Split message body by instances of the English Date header text with optional whitespace in front
+      var splitBody = lastMessage.split(/[>\s\*]*Date:\*?\ /);
+      if (splitBody.length > 1) {
+        lang = "en";
+      }
       // Process only the last message.
       var lastMessage = splitBody[splitBody.length - 1 ];
       // Get the first line and cast to date.
       try {
           var naturalLanguageDate = lastMessage.split('\n')[0];
           // Use Chrono to parse the date in english or german.
-          var parsedDateEn = chrono.chrono.en.parseDate(naturalLanguageDate);
-          var parsedDateDe = chrono.chrono.de.parseDate(naturalLanguageDate);
-          // Use the date that is valid.
-          var preparedDate = parsedDateEn ? parsedDateEn : parsedDateDe;
-          // return it as a date.
-          return preparedDate;
+          var parsedDate = {};
+          if (lang == "en") {
+            return chrono.chrono.en.parseDate(naturalLanguageDate);
+          }
+          if (lang == "de") {
+            return chrono.chrono.de.parseDate(naturalLanguageDate);
+          }
       }
       catch(e) {
           Logger.log("WARNING: Could not parse date from forwarded message: " + message.getSubject());
